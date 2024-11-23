@@ -1,55 +1,17 @@
-document.getElementById('sendReport').addEventListener('click', async (e) => {
-    e.preventDefault();
-    
-    // Get form values and ensure they're properly trimmed
+document.getElementById('sendReport').addEventListener('click', async function() {
     const formData = {
-        responseType: document.getElementById('type').value.trim().toLowerCase(),
-        description: document.getElementById('description').value.trim(),
-        location: document.getElementById('location').value.trim()
+        responseType: document.getElementById('type').value,
+        location: document.getElementById('location').value,
+        description: document.getElementById('description').value
     };
-    
-    // Debug log to verify data
-    console.log('Form Data:', formData);
-    
-    // Validate all fields
-    if (!formData.responseType || !formData.description || !formData.location) {
-        alert('Please fill in all required fields');
-        return;
-    }
-    
+
     try {
-        const response = await fetch('/api/responses', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                responseType: formData.responseType,
-                description: formData.description,
-                location: formData.location  // Make sure this is being sent
-            })
-        });
-
-        // Debug log to verify response
-        console.log('Response status:', response.status);
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Failed to submit report');
-        }
-
-        const data = await response.json();
-        console.log('Success response:', data);
-        alert('Report submitted successfully!');
-        
-        // Clear form
-        document.getElementById('type').value = 'fire';
-        document.getElementById('description').value = '';
-        document.getElementById('location').value = '';
-        
+        const response = await axios.post('/api/responses', formData);
+        alert('Report sent successfully!');
+        formData.reset();
     } catch (error) {
-        console.error('Submission Error:', error);
-        alert('Error submitting report: ' + error.message);
+        console.error('Error sending report:', error);
+        alert('Failed to send report. Please try again.');
     }
 });
 

@@ -33,7 +33,7 @@ app.get('/reports', (req, res) => {
 
 // 4. 404 Handler (after all other routes)
 app.use((req, res) => {
-    res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.status(404).json({ message: 'Not Found' });
 });
 
 // 5. Error Handler (always last)

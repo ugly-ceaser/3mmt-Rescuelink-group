@@ -26,7 +26,7 @@ app.use('/api', routes);
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
+//check if reports.html is working
 app.get('/reports', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'reports.html'));
 });

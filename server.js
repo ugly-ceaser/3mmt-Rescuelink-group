@@ -4,11 +4,11 @@ const path = require('path');
 const connectDB = require('./config/db_connect');
 const cors = require('cors');
 require('dotenv').config();
-const routes = require('./routes')
+const routes = require('./routes');
 
 const app = express();
 
-// Middleware
+// 1. Middleware
 app.use(cors({
     origin: '*',  // Allow all origins
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],  // Allowed methods
@@ -16,17 +16,13 @@ app.use(cors({
     credentials: true,  // Allow credentials
     optionsSuccessStatus: 200
 }));
-
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Database connection
-
-
-// API Routes
+// 2. API Routes (before static routes)
 app.use('/api', routes);
 
-// Serve static files
+// 3. Static file routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -35,24 +31,25 @@ app.get('/reports', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'reports.html'));
 });
 
-// Handle 404s
+// 4. 404 Handler (after all other routes)
 app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Error handler
+// 5. Error Handler (always last)
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ message: 'Something broke!' });
 });
 
+// 6. Server initialization
 const PORT = process.env.PORT || 3000;
 
-connectDB().then(()=>{
-
+connectDB().then(() => {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
+}).catch(err => {
+    console.error('Failed to connect to database:', err);
+    process.exit(1);
 });
-
 
 module.exports = app;

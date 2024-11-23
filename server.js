@@ -1,54 +1,45 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const path = require('path');
-const Route = require('express').Router();
 const cors = require('cors');
-const connectDB = require('./config/db_connect');
-const routes = require('./routes/');
+require('dotenv').config();
+
 const app = express();
 
-// Enable CORS for all origins
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Middleware for parsing requests
+// Middleware
+app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Database connection
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('MongoDB Connected'))
+    .catch(err => console.log('MongoDB Error:', err));
 
-// Serve HTML files
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public/index.html')));
-app.get('/reports', (req, res) => res.sendFile(path.join(__dirname, 'public/reports.html')));
+// API Routes
+app.use('/api/responses', require('./routes/responses'));
 
-
-
-const port = process.env.PORT || 3000;
-
-// Routes
-app.use('/api', routes);
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    res.status(500).json({ 
-        message: 'Internal Server Error',
-        error: err.message 
-    });
+// Serve static files
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Connect to database and start server
-connectDB()
-    .then(() => {
-        app.listen(port, () => {
-            console.log(`Server is running on port ${port}`);
-        });
-    })
-    .catch(err => {
-        console.error('Failed to connect to database:', err);
-        process.exit(1);
-    });
+app.get('/reports', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'reports.html'));
+});
+
+// Handle 404s
+app.use((req, res) => {
+    res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Error handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Something broke!' });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+module.exports = app;

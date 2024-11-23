@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Reports</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        .report-card {
+            background: white;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .report-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+        .vote-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .vote-btn {
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+        }
+        .vote-btn:hover {
+            background: #f5f5f5;
+        }
+        .vote-count {
+            margin: 0 0.5rem;
+        }
+        .sort-controls {
+            margin-bottom: 1rem;
+        }
+        .sort-btn {
+            padding: 0.5rem 1rem;
+            margin-right: 0.5rem;
+            border: 1px solid #dc3545;
+            border-radius: 4px;
+            background: white;
+            color: #dc3545;
+            cursor: pointer;
+        }
+        .sort-btn.active {
+            background: #dc3545;
+            color: white;
+        }
+        .timestamp {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .response-type {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-right: 0.5rem;
+        }
+        .type-fire { background: #ffebee; color: #c62828; }
+        .type-medical { background: #e8f5e9; color: #2e7d32; }
+        .type-crime { background: #fff3e0; color: #ef6c00; }
+        .location-info {
+            margin: 0.5rem 0;
+            color: #666;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .location-icon {
+            color: #dc3545;
+        }
+        .location-text {
+            font-weight: 500;
+        }
+
+        .search-controls {
+            margin-bottom: 1rem;
+        }
+        
+        .search-input {
+            width: 100%;
+            max-width: 300px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #dc3545;
+            box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+        }
+        
+        .report-card.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Community Emergency Response</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="#" onclick="openModal()">Emergency Contacts</a></li>
+            <li><a href="/reports.html" class="active">View Reports</a></li>
+        </ul>
+    </nav>
+    <main>
+        <section id="reports">
+            <h2>Emergency Reports</h2>
+            <div class="sort-controls">
+                <button class="sort-btn active" data-sort="timestamp">Sort by Time</button>
+                <button class="sort-btn" data-sort="votes">Sort by Votes</button>
+                <button class="sort-btn" data-sort="type">Sort by Type</button>
+            </div>
+            <div class="search-controls">
+                <input 
+                    type="text" 
+                    id="locationSearch" 
+                    placeholder="Search by location..."
+                    class="search-input"
+                >
+            </div>
+            <div id="reports-container">
+                <!-- Reports will be dynamically inserted here -->
+            </div>
+        </section>
+    </main>
+
+    <script>
+        let reports = [];
+        let filteredReports = [];
+    
+        async function fetchReports() {
+            try {
+                const response = await fetch('/api/responses');
+                const data = await response.json();
+                reports = data.responses;
+                filteredReports = [...reports];
+                displayReports();
+            } catch (error) {
+                console.error('Error fetching reports:', error);
+            }
+        }
+    
+        function displayReports() {
+            const container = document.getElementById('reports-container');
+            container.innerHTML = filteredReports.map(report => `
+                <div class="report-card" data-id="${report._id}">
+                    <span class="response-type type-${report.responseType}">${report.responseType.toUpperCase()}</span>
+                    <span class="timestamp">${new Date(report.timestamp).toLocaleString()}</span>
+                    <div class="location-info">
+                        <span class="location-icon">📍</span>
+                        <span class="location-text">${report.location || 'Location not specified'}</span>
+                    </div>
+                    <p>${report.description}</p>
+                    <div class="report-controls">
+                        <div class="vote-buttons">
+                            <button class="vote-btn" onclick="vote('${report._id}', 1)">👍</button>
+                            <span class="vote-count">${report.votes || 0}</span>
+                            <button class="vote-btn" onclick="vote('${report._id}', -1)">👎</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        function filterReportsByLocation(searchTerm) {
+            if (!searchTerm.trim()) {
+                filteredReports = [...reports];
+            } else {
+                searchTerm = searchTerm.toLowerCase().trim();
+                filteredReports = reports.filter(report => 
+                    report.location && report.location.toLowerCase().includes(searchTerm)
+                );
+            }
+            displayReports();
+        }
+
+        // Event listener for search input
+        document.getElementById('locationSearch').addEventListener('input', (e) => {
+            filterReportsByLocation(e.target.value);
+        });
+
+        // Sort reports - single event listener implementation
+        document.querySelectorAll('.sort-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                document.querySelectorAll('.sort-btn').forEach(btn => 
+                    btn.classList.remove('active')
+                );
+                e.target.classList.add('active');
+
+                const sortType = e.target.dataset.sort;
+                switch(sortType) {
+                    case 'timestamp':
+                        filteredReports.sort((a, b) => 
+                            new Date(b.timestamp) - new Date(a.timestamp)
+                        );
+                        break;
+                    case 'votes':
+                        filteredReports.sort((a, b) => b.votes - a.votes);
+                        break;
+                    case 'type':
+                        filteredReports.sort((a, b) => 
+                            a.responseType.localeCompare(b.responseType)
+                        );
+                        break;
+                }
+                displayReports();
+            });
+        });
+
+        async function vote(reportId, value) {
+            try {
+                const response = await fetch(`/api/responses/${reportId}/vote`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ value })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update vote');
+                }
+
+                // Update both reports and filteredReports arrays
+                const report = reports.find(r => r._id === reportId);
+                const filteredReport = filteredReports.find(r => r._id === reportId);
+                
+                if (report) {
+                    report.votes += value;
+                }
+                if (filteredReport) {
+                    filteredReport.votes += value;
+                }
+                
+                displayReports();
+            } catch (error) {
+                console.error('Error updating vote:', error);
+                alert('Failed to update vote. Please try again.');
+            }
+        }
+
+        // Initial load
+        fetchReports();
+    </script>
+
+    
+
+    <div id="contactsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Emergency Contacts in Nigeria</h2>
+            <div class="emergency-sections">
+                <div class="emergency-section">
+                    <h3>National Emergency Numbers</h3>
+                    <ul>
+                        <li>📞 Emergency (Toll-Free): 112</li>
+                        <li>📞 Nigeria Police Force: 0803-123-1333</li>
+                        <li>📞 Federal Road Safety Corps: 122</li>
+                        <li>📞 Federal Fire Service: 112</li>
+                    </ul>
+                </div>
+                
+                <div class="emergency-section">
+                    <h3>Medical Emergency</h3>
+                    <ul>
+                        <li>📞 National Emergency Management Agency (NEMA): 0800-CALL-NEMA</li>
+                        <li>📞 State Emergency Service: 767 or 112</li>
+                        <li>📞 National Ambulance Service: 112</li>
+                    </ul>
+                </div>
+    
+                <div class="emergency-section">
+                    <h3>Security Services</h3>
+                    <ul>
+                        <li>📞 Nigerian Police Force (NPF): 112</li>
+                        <li>📞 State Security Service: 090-2222-2222</li>
+                        <li>📞 Nigerian Security and Civil Defence Corps: 112</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+      
+
+
+      <script src="./js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Emergency App</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Community Emergency Response</h1>
+  </header>
+  <nav>
+    <ul>
+      <ul>
+        <li><a href="/" class="active">Home</a></li>
+        <li><a href="#" onclick="openModal()">Emergency Contacts</a></li>
+        <li><a href="/reports.html" >View Reports</a></li>
+    </ul>
+    </ul>
+  </nav>
+  <main>
+    <section id="home">
+      <h2>Welcome to the Community Emergency App</h2>
+      <p>Quickly report emergencies and find help nearby.</p>
+    </section>
+    <section id="report">
+      <h2>Report Emergency</h2>
+      <form id="emergencyForm">
+        <label for="type">Type of Emergency:</label>
+        <select id="type" required>
+            <option value="fire">Fire</option>
+            <option value="medical">Medical</option>
+            <option value="crime">Crime</option>
+        </select>
+        <br>
+        <label for="location">Location:</label>
+        <select id="location" required>
+            <option value="">Select Location</option>
+            <optgroup label="Enugu North">
+                <option value="Ogui Road">Ogui Road</option>
+                <option value="Presidential Road">Presidential Road</option>
+                <option value="Okpara Avenue">Okpara Avenue</option>
+                <option value="New Haven">New Haven</option>
+                <option value="Independence Layout">Independence Layout</option>
+                <option value="GRA">GRA</option>
+            </optgroup>
+            <optgroup label="Enugu South">
+                <option value="Agbani Road">Agbani Road</option>
+                <option value="Mayor Market">Mayor Market</option>
+                <option value="Garriki">Garriki</option>
+                <option value="Achara Layout">Achara Layout</option>
+                <option value="Maryland">Maryland</option>
+            </optgroup>
+            <optgroup label="Enugu East">
+                <option value="Trans Ekulu">Trans Ekulu</option>
+                <option value="Nike Lake Road">Nike Lake Road</option>
+                <option value="Abakpa Nike">Abakpa Nike</option>
+                <option value="Emene">Emene</option>
+                <option value="Nike Road">Nike Road</option>
+            </optgroup>
+        </select>
+        <br>
+        <label for="description">Description:</label>
+        <textarea id="description" rows="4" required></textarea>
+        <br>
+        <button type="button" id="sendReport">Send Report</button>
+    </form>
+    </section>
+    <div id="contactsModal" class="modal">
+      <div class="modal-content">
+          <span class="close" onclick="closeModal()">&times;</span>
+          <h2>Emergency Contacts in Nigeria</h2>
+          <div class="emergency-sections">
+              <div class="emergency-section">
+                  <h3>National Emergency Numbers</h3>
+                  <ul>
+                      <li>📞 Emergency (Toll-Free): 112</li>
+                      <li>📞 Nigeria Police Force: 0803-123-1333</li>
+                      <li>📞 Federal Road Safety Corps: 122</li>
+                      <li>📞 Federal Fire Service: 112</li>
+                  </ul>
+              </div>
+              
+              <div class="emergency-section">
+                  <h3>Medical Emergency</h3>
+                  <ul>
+                      <li>📞 National Emergency Management Agency (NEMA): 0800-CALL-NEMA</li>
+                      <li>📞 State Emergency Service: 767 or 112</li>
+                      <li>📞 National Ambulance Service: 112</li>
+                  </ul>
+              </div>
+  
+              <div class="emergency-section">
+                  <h3>Security Services</h3>
+                  <ul>
+                      <li>📞 Nigerian Police Force (NPF): 112</li>
+                      <li>📞 State Security Service: 090-2222-2222</li>
+                      <li>📞 Nigerian Security and Civil Defence Corps: 112</li>
+                  </ul>
+              </div>
+          </div>
+      </div>
+  </div>
+  </main>
+  <footer>
+    <p>&copy; 2024 Community Response App</p>
+  </footer>
+  <script src="./js/script.js"></script>
+</body>
+</html>
